@@ -9,7 +9,9 @@ const withErrorHandler = (WrappedComponent, axios) => {
       error: null
     }
 
-    componentDidMount() {
+    // Change to Will. because error by default when waiting on loading data from server
+    // it will be called before the child components are rendered
+    componentWillMount() {
       axios.interceptors.request.use(req => {
         this.setState({error: null});
         return req;
