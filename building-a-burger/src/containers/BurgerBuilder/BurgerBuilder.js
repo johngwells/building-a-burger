@@ -17,16 +17,24 @@ const INGREDIENT_PRICES = {
 
 class BurgerBuilder extends Component {
   state = {
-    ingredients: {
-      salad: 0,
-      bacon: 0,
-      cheese: 0,
-      meat: 0
-    },
+    //   ingredients: {
+    //     salad: 0,
+    //     bacon: 0,
+    //     cheese: 0,
+    //     meat: 0
+    //   },
+    ingredients: null, // setting ingredients dynamically
     totalPrice: 4,
     purchasable: false,
     purchasing: false,
     loading: false
+  }
+
+  componentDidMount() {
+    axios.get('https://react-burger-a5c8a.firebaseio.com/ingredients.json')
+      .then(response => {
+        this.setState({ ingredients: response.data });
+      });
   }
 
   updatePurchaseState(ingredients) {
@@ -40,7 +48,7 @@ class BurgerBuilder extends Component {
       .reduce((sum, el) => {
         return sum + el;
       }, 0);
-    this.setState({purchasable: sum > 0});
+    this.setState({ purchasable: sum > 0 });
   }
 
   addIngredientHandler = (type) => {
@@ -54,7 +62,7 @@ class BurgerBuilder extends Component {
     const priceAddition = INGREDIENT_PRICES[type];
     const oldPrice = this.state.totalPrice;
     const newPrice = oldPrice + priceAddition;
-    this.setState({totalPrice: newPrice, ingredients: updatedIngredients});
+    this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
     this.updatePurchaseState(updatedIngredients);
   }
 
@@ -73,7 +81,7 @@ class BurgerBuilder extends Component {
     const priceDeduction = INGREDIENT_PRICES[type];
     const oldPrice = this.state.totalPrice;
     const newPrice = oldPrice - priceDeduction;
-    this.setState({totalPrice: newPrice, ingredients: updatedIngredients});
+    this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
     this.updatePurchaseState(updatedIngredients);
   }
 
@@ -108,7 +116,7 @@ class BurgerBuilder extends Component {
     }
     axios.post('/orders.jsons', order)
       .then(response => {
-      // we want to stop the request whether the was an error or not
+        // we want to stop the request whether the was an error or not
         this.setState({ loading: false, purchasing: false });
       })
       .catch(error => {
@@ -125,12 +133,31 @@ class BurgerBuilder extends Component {
     }
     // example: {salad: true, meat: false, ...}
 
-    // Loading Check *Removed <OrderSummary /> from Modal below and placed here
-    let orderSummary = <OrderSummary
-    ingredients={this.state.ingredients}
-    price={this.state.totalPrice}
-    purchaseCancelled={this.purchaseCancelHandler}
-    purchaseContinued={this.purchaseContinueHandler} />;
+    let orderSummary = null;
+    let burger = <Spinner />
+
+    if (this.state.ingredients) {
+      burger = (
+        <Aux>
+          <Burger ingredients={this.state.ingredients} />
+          <BuildControls
+            ingredientAdded={this.addIngredientHandler}
+            ingredientRemoved={this.removeIngredientHandler}
+            disabled={disabledInfo}
+            purchasable={this.state.purchasable}
+            ordered={this.purchaseHandler}
+            price={this.state.totalPrice}
+          />
+        </Aux>
+      );
+      // Loading Check *Removed <OrderSummary /> from Modal below and placed here
+      orderSummary = <OrderSummary
+        ingredients={this.state.ingredients}
+        price={this.state.totalPrice}
+        purchaseCancelled={this.purchaseCancelHandler}
+        purchaseContinued={this.purchaseContinueHandler} />;
+    }
+    
     if (this.state.loading) {
       orderSummary = <Spinner />
     }
@@ -140,15 +167,7 @@ class BurgerBuilder extends Component {
         <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
           {orderSummary}
         </Modal>
-        <Burger ingredients={this.state.ingredients} />
-        <BuildControls
-          ingredientAdded={this.addIngredientHandler}
-          ingredientRemoved={this.removeIngredientHandler}
-          disabled={disabledInfo}
-          purchasable={this.state.purchasable}
-          ordered={this.purchaseHandler}
-          price={this.state.totalPrice}
-        />
+        {burger}
       </Aux>
     );
   }
