@@ -21,7 +21,7 @@ class ContactData extends Component {
     this.setState({ loading: true });
     // calert('You continue!');
     const order = {
-      ingredients: this.state.ingredients,
+      ingredients: this.props.ingredients,
       price: this.props.price,
       customer: {
         name: "John Wells",
