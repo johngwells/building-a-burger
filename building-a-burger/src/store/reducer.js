@@ -10,10 +10,17 @@ const initialState = {
   totalPrice: 4,
 };
 
+const INGREDIENT_PRICES = {
+  salad: 0.5,
+  cheese: 0.4,
+  meat: 1.3,
+  bacon: 0.3
+}
+
 // ...state doesn't go deeply. spread again in ingredients object
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case actionTypes.ADD_INGREDIENTS:
+    case actionTypes.ADD_INGREDIENT:
       return {
         ...state,
         ingredients: {
@@ -21,12 +28,15 @@ const reducer = (state = initialState, action) => {
           // we want to overwrite the given ingredient. get the payload of this action
           // [] does not create an array. es6 syntax: this is to dynamically overwrite a property in a given javascript object 
           [action.ingredientName]: state.ingredients[action.ingredientName] + 1
-        }
+        },
+        totalPrice: state.totalPrice + INGREDIENT_PRICES[action.ingredientName]
       };
     case actionTypes.REMOVE_INGREDIENT:
       return {
         ...state,
-        [action.ingredientName]: state.ingredients[action.ingredientName] - 1
+        ingredients: {
+          [action.ingredientName]: state.ingredients[action.ingredientName] - 1
+        }
       };
     default:
       return state;
