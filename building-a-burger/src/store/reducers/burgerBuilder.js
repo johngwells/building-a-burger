@@ -1,4 +1,5 @@
 import * as actionTypes from '../actions/actionTypes';
+import { updateObject } from '../utility';
 
 const initialState = {
   ingredients: null,
@@ -14,19 +15,17 @@ const INGREDIENT_PRICES = {
 }
 
 // ...state doesn't go deeply. spread again in ingredients object
+// using utility.js to refactor code
 const reducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.ADD_INGREDIENT:
-      return {
-        ...state,
-        ingredients: {
-          ...state.ingredients,
-          // we want to overwrite the given ingredient. get the payload of this action
-          // [] does not create an array. es6 syntax: this is to dynamically overwrite a property in a given javascript object 
-          [action.ingredientName]: state.ingredients[action.ingredientName] + 1
-        },
+      const updatedIngredient = { [action.ingredientName]: state.ingredients[action.ingredientName] + 1 }
+      const updatedIngredients = updateObject(state.ingredients, updatedIngredient);
+      const updatedState = {
+        ingredients: updatedIngredients,
         totalPrice: state.totalPrice + INGREDIENT_PRICES[action.ingredientName]
-      };
+      }
+      return updateObject(state, updatedState);
     case actionTypes.REMOVE_INGREDIENT:
       return {
         ...state,
@@ -35,8 +34,7 @@ const reducer = (state = initialState, action) => {
         }
       };
     case actionTypes.SET_INGREDIENTS:
-      return {
-        ...state,
+      return updateObject(state, {
         // ingredients: action.ingredients,
         // lose flexibility because of this, but since
         // limited ingredients its fine.
@@ -48,12 +46,9 @@ const reducer = (state = initialState, action) => {
         },
         totalPrice: 4,
         error: false
-      };
+      });
     case actionTypes.FETCH_INGREDIENTS_FAILED:
-      return {
-        ...state,
-        error: true
-      };
+      return updateObject(state, { error: true });
     default:
       return state;
   }
