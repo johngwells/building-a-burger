@@ -1,11 +1,11 @@
 import * as actionTypes from '../actions/actionTypes';
 import { updateObject } from '../utility';
-import { removeIngredient } from '../actions/burgerBuilder';
 
 const initialState = {
   ingredients: null,
   totalPrice: 4,
-  error: false
+  error: false,
+  building: false
 };
 
 const INGREDIENT_PRICES = {
@@ -20,16 +20,18 @@ const addIngredient = (state, action) => {
   const updatedIngredients = updateObject(state.ingredients, updatedIngredient);
   const updatedState = {
     ingredients: updatedIngredients,
-    totalPrice: state.totalPrice + INGREDIENT_PRICES[action.ingredientName]
+    totalPrice: state.totalPrice + INGREDIENT_PRICES[action.ingredientName],
+    building: true
   }
   return updateObject(state, updatedState);
 }
 
-const removeIngredint = (state, action) => {
+const removeIngredient = (state, action) => {
   return {
     ...state,
     ingredients: {
-      [action.ingredientName]: state.ingredients[action.ingredientName] - 1
+      [action.ingredientName]: state.ingredients[action.ingredientName] - 1,
+      building: true
     }
   };
 }
@@ -46,7 +48,8 @@ const setIngredients = (state, action) => {
       meat: action.ingredients.meat
     },
     totalPrice: 4,
-    error: false
+    error: false,
+    building: false
   });
 }
 
